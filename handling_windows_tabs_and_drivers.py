@@ -66,4 +66,4 @@ for handle in list_handles2:
 driver.quit()
 driver2.quit()
 
-git add handling\ windows,\ tabs\ and\ drivers.py
+
