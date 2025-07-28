@@ -49,3 +49,21 @@ print("-----------------##-----------------")
 #driver2.window_handles will not give handles of driver1
 #driver.window_handles will not give handles of driver2
 #we can only get handles of the current driver instance
+
+
+#now add multiple tabs in second driver
+for url in urls:
+    driver2.switch_to.new_window("tab")
+    driver2.get(url)
+
+list_handles2 = driver2.window_handles
+print("list of handles in second driver after adding tabs:-", list_handles2)
+for handle in list_handles2:
+    driver2.switch_to.window(handle)
+    print("current title in second driver:", driver2.current_url, driver2.title)
+
+# Close the drivers
+driver.quit()
+driver2.quit()
+
+git add handling\ windows,\ tabs\ and\ drivers.py
