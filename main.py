@@ -35,4 +35,17 @@ driver.switch_to.window(current_handle)
 
 
 
-#
+#now we are adding new webdriver instance
+driver2 = webdriver.Chrome()
+driver2.get("https://www.youtube.com")
+time.sleep(2)
+#get all window handles
+list_handles2 = driver2.window_handles  
+print("list of handles in second driver:-", list_handles2)
+
+print("-----------------##-----------------")
+
+#we cant get window handles of first driver using secqnd driver     
+#driver2.window_handles will not give handles of driver1
+#driver.window_handles will not give handles of driver2
+#we can only get handles of the current driver instance
