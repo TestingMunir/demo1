@@ -9,6 +9,7 @@ from selenium.webdriver.support import expected_conditions as EC
 
 
 driver=webdriver.Chrome()
+driver.implicitly_wait(3)
 driver.get("https://www.google.com")
 
 
@@ -43,3 +44,30 @@ search_box.send_keys(Keys.ENTER)
 
 
 time.sleep(5)
+
+
+# navigate commands of selenium
+driver.get("https://www.wikipedia.org")
+driver.refresh()  # Refresh the current page
+
+wait=WebDriverWait(driver,10)
+english=wait.until(EC.element_to_be_clickable((By.CSS_SELECTOR,"a[id='js-link-box-en'] Strong")))
+english.click()
+driver.back()  # Go back to the previous page   
+driver.forward()  # Go forward to the next page
+
+driver.execute_script("window.scrollTo(0, document.body.scrollHeight);")  # Scroll to the bottom of the page
+
+# scroll to a specific element
+#element = wait.until(EC.presence_of_element_located((By.XPATH, "//a[contains
+
+page_botton_locator_xpath="//div[text()='50,000+ articles']"
+page_bottom=driver.find_element(By.XPATH,page_botton_locator_xpath)
+driver.execute_script("arguments[0].scrollIntoView(true);", page_bottom)
+
+time.sleep(2)  # Wait for the scroll to complete
+time.sleep(2) #wait to see element
+
+
+driver.quit()  # Close the browser and end the session
+
