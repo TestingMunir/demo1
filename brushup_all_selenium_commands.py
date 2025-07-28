@@ -65,6 +65,8 @@ page_botton_locator_xpath="//div[text()='50,000+ articles']"
 page_bottom=driver.find_element(By.XPATH,page_botton_locator_xpath)
 driver.execute_script("arguments[0].scrollIntoView(true);", page_bottom)
 
+assert True 
+#this wait is appplied to see the changes on browser
 time.sleep(2)  # Wait for the scroll to complete
 time.sleep(2) #wait to see element
 
