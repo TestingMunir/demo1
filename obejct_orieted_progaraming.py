@@ -96,3 +96,72 @@ class Tesla(car):
 
 tesla_m1=Tesla(2,2,"petrol",False)
 print(tesla_m1.self_driving_mode())
+
+
+### Multiple Inheritance
+## When a class inherits from more than one base class.
+## Base class 1
+class Animal:
+    def __init__(self,name):
+        self.name=name
+
+    def speak(self):
+        print("Subclass must implement this method")
+
+## BAse class 2
+class Pet:
+    def __init__(self, owner):
+        self.owner = owner
+
+
+##Derived class
+class Dog(Animal,Pet):
+    def __init__(self,name,owner):
+        Animal.__init__(self,name)
+        Pet.__init__(self,owner)
+
+    def speak(self):
+        return f"{self.name} say woof"
+    
+
+## Create an object
+dog=Dog("Buddy","Krish")
+print(dog.speak())
+print(f"Owner:{dog.owner}")
+
+
+
+class backend_language:
+
+    def __init__(self,name):
+        self.name=name
+
+    def usebackend(self):
+        return f"this {self.name} is used in backend developement"
+    
+
+class sql_language:
+    def __init__(self,name, database):
+        self.name=name
+        self.database=database
+        
+
+    def usedatabse(self):
+        return f"this {self.name} is used  for quering {self.database} database"
+    
+
+class Programming_language(backend_language, sql_language):
+    def __init__(self,name,database,version):
+        self.version = version
+        backend_language.__init__(self,name)
+        sql_language.__init__(self,name,database)
+
+    def use(self):
+        return f"this {self.name} is of version {self.version}"
+    
+
+python=Programming_language("python","mysql",3.11)
+
+print(python.usebackend())
+print(python.usedatabse()+" using sqlite")
+print(python.use())
