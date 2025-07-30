@@ -1,0 +1,122 @@
+pipeline {
+  agent {
+    docker {
+      image 'python:3.10'
+      args '-v /var/run/docker.sock:/var/run/docker.sock'
+    }
+  }
+  environment {
+    DEV_URL = 'https://dev.example.com'
+    UAT_URL = 'https://uat.example.com'
+    AUTOMATION_REPO = 'https://github.com/your-org/automation-tests.git'
+    REPORT_DIR = 'reports/html'
+    EMAIL_RECIPIENTS = 'your_email@example.com'
+  }
+  options {
+    timestamps()
+    skipDefaultCheckout(true)
+  }
+  stages {
+    stage('Clone Automation Scripts') {
+      steps {
+        git branch: 'main', url: "${env.AUTOMATION_REPO}"
+      }
+    }
+    stage('Install Dependencies') {
+      steps {
+        sh """
+          pip install --upgrade pip
+          pip install pytest pytest-html
+        """
+      }
+    }
+    stage('Set Environment') {
+      steps {
+        script {
+          echo "Triggered from branch: ${env.BRANCH_NAME}"
+          if (env.BRANCH_NAME == 'dev') {
+            env.TARGET_ENV = 'dev'
+            env.BASE_URL = env.DEV_URL
+          } else if (env.BRANCH_NAME == 'uat') {
+            env.TARGET_ENV = 'uat'
+            env.BASE_URL = env.UAT_URL
+          } else {
+            error "Unsupported branch: ${env.BRANCH_NAME}"
+          }
+          echo "Testing Environment: $TARGET_ENV, BASE_URL: $BASE_URL"
+        }
+      }
+    }
+    stage('Run Tests') {
+      parallel {
+        stage('Smoke Tests') {
+          steps {
+            echo "Running Smoke Tests on $BASE_URL"
+            sh """
+              pytest -m smoke --base-url=${BASE_URL} --html=${REPORT_DIR}/smoke_report.html --self-contained-html
+            """
+          }
+        }
+        stage('Regression Tests (after smoke)') {
+          steps {
+            script {
+              def smokeStatus = sh(
+                script: """
+                  pytest -m smoke --base-url=${BASE_URL} --html=${REPORT_DIR}/temp_smoke.html --self-contained-html
+                """,
+                returnStatus: true
+              )
+              if (smokeStatus != 0) {
+                error "Smoke tests failed. Skipping regression."
+              } else {
+                echo "Smoke tests passed. Running Regression Tests"
+                sh """
+                  pytest -m regression --base-url=${BASE_URL} --html=${REPORT_DIR}/regression_report.html --self-contained-html
+                """
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+  post {
+    always {
+      echo "Publishing HTML Reports..."
+      publishHTML(target: [
+        reportDir: "${REPORT_DIR}",
+        reportFiles: 'smoke_report.html,regression_report.html',
+        reportName: 'Test Report',
+        keepAll: true
+      ])
+    }
+    failure {
+      emailext(
+        to: "${EMAIL_RECIPIENTS}",
+        subject: " Jenkins Build FAILED: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+        body: """
+        <p><b>Build failed for job:</b> ${env.JOB_NAME}</p>
+        <p><b>Branch:</b> ${env.BRANCH_NAME}</p>
+        <p><b>Environment:</b> ${env.TARGET_ENV}</p>
+        <p><b>URL:</b> ${env.BASE_URL}</p>
+        <p><a href="${env.BUILD_URL}">Click here to view the build logs and reports.</a></p>
+        """,
+        mimeType: 'text/html'
+      )
+    }
+    success {
+      emailext(
+        to: "${EMAIL_RECIPIENTS}",
+        subject: " Jenkins Build SUCCESS: ${env.JOB_NAME} [${env.BUILD_NUMBER}]",
+        body: """
+        <p><b>Build succeeded for job:</b> ${env.JOB_NAME}</p>
+        <p><b>Branch:</b> ${env.BRANCH_NAME}</p>
+        <p><b>Environment:</b> ${env.TARGET_ENV}</p>
+        <p><b>URL:</b> ${env.BASE_URL}</p>
+        <p><a href="${env.BUILD_URL}">Click here to view the build logs and reports.</a></p>
+        """,
+        mimeType: 'text/html'
+      )
+    }
+  }
+}
