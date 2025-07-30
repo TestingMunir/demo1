@@ -59,3 +59,40 @@ account.deposit(100)
 account.withdraw(300)
 
 print(account.get_balance())
+
+
+# Inheritance
+
+class car:
+    def __init__(self,windows, doors,enginetype,max_speed):
+        self.windows=windows
+        self.doors=doors
+        self.enginetype=enginetype
+        self.max_speed=max_speed
+
+    def  power_source(self,enginetype):
+        return"this person drive a {} car".format(enginetype)
+
+    def drive_speed(self,speed,max_speed):
+        return f"this person driveing at {speed} but max speed is {max_speed}"
+
+
+audi=car(2,2,"petrol",300)
+print(audi.power_source("petrol"))
+print(audi.drive_speed(50,300))
+
+
+class Tesla(car):
+    def __init__(self, widows, doors, enginetype,self_driving):
+        super().__init__(widows, doors, enginetype,max_speed=200)
+        self.self_driving = self_driving
+
+    def self_driving_mode(self):
+        if self.self_driving:
+            return "self driving mode is on"
+        
+        else:
+            return "self driving mode is off"
+
+tesla_m1=Tesla(2,2,"petrol",False)
+print(tesla_m1.self_driving_mode())
